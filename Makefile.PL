@@ -7,6 +7,7 @@ WriteMakefile
   'PREREQ_PM' => {
                    'JSON::PP' => 0,
                    'LWP::UserAgent' => '6.02',
+                   'Test::Exception' => 0,
                    'Test::More' => 0,
                    'Try::Tiny' => 0,
                    'version' => 0

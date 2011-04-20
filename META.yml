@@ -3,11 +3,8 @@ abstract: 'Disqus.com API access'
 author:
   - 'Ben van Staveren <madcat@cpan.org>'
 build_requires:
-  JSON::PP: 0
-  LWP::UserAgent: 6.02
+  Test::Exception: 0
   Test::More: 0
-  Try::Tiny: 0
-  version: 0
 configure_requires:
   Module::Build: 0.38
 dynamic_config: 1
@@ -22,8 +19,13 @@ provides:
     file: lib/Net/Disqus.pm
     version: v0.1.0
   Net::Disqus::Exception:
-    file: lib/Net/Disqus.pm
+    file: lib/Net/Disqus/Exception.pm
     version: 0
+requires:
+  JSON::PP: 0
+  LWP::UserAgent: 6.02
+  Try::Tiny: 0
+  version: 0
 resources:
   license: http://dev.perl.org/licenses/
 version: v0.1.0

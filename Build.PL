@@ -9,8 +9,11 @@ my $builder = Module::Build->new(
     dist_version_from   => 'lib/Net/Disqus.pm',
     dist_abstract       => 'Disqus.com API access',
     build_requires => {
-        'version'           => 0,
+        'Test::Exception'   => 0,
         'Test::More'        => 0,
+    },
+    requires => {
+        'version'           => 0,
         'JSON::PP'          => 0,
         'LWP::UserAgent'    => '6.02',
         'Try::Tiny'         => 0,

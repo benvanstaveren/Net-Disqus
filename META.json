@@ -16,16 +16,21 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "JSON::PP" : 0,
-            "LWP::UserAgent" : "6.02",
-            "Test::More" : 0,
-            "Try::Tiny" : 0,
-            "version" : 0
+            "Test::Exception" : 0,
+            "Test::More" : 0
          }
       },
       "configure" : {
          "requires" : {
             "Module::Build" : "0.38"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "JSON::PP" : 0,
+            "LWP::UserAgent" : "6.02",
+            "Try::Tiny" : 0,
+            "version" : 0
          }
       }
    },
@@ -35,7 +40,7 @@
          "version" : "v0.1.0"
       },
       "Net::Disqus::Exception" : {
-         "file" : "lib/Net/Disqus.pm",
+         "file" : "lib/Net/Disqus/Exception.pm",
          "version" : 0
       }
    },
