@@ -1,0 +1,11 @@
+Build.PL
+Changes
+lib/Net/Disqus.pm
+lib/Net/Disqus/interfaces.json
+MANIFEST
+README
+t/00-load.t
+t/manifest.t
+Makefile.PL
+META.yml
+META.json
