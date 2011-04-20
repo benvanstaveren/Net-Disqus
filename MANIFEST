@@ -1,6 +1,7 @@
 Build.PL
 Changes
 lib/Net/Disqus.pm
+lib/Net/Disqus/Exception.pm
 lib/Net/Disqus/interfaces.json
 Makefile.PL
 MANIFEST
@@ -8,4 +9,7 @@ META.json
 META.yml
 README
 t/00-load.t
+t/01-instantiate.t
+t/02-exception.t
+t/02-instantiate-no-key.t
 t/manifest.t

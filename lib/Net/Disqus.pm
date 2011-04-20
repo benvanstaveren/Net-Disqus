@@ -3,9 +3,9 @@ use warnings;
 use strict;
 use version;
 use JSON::PP;
-use Carp;
 use LWP::UserAgent;
 use Try::Tiny;
+use Net::Disqus::Exception;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua));
@@ -17,7 +17,7 @@ our $AUTOLOAD;
 sub new {
     my $class = shift;
 
-    croak '"new" is not an instance method, ' if(ref($class));
+    die Net::Disqus::Exception->new({ code => 500, text => '"new" is not an instance method'}) if(ref($class));
 
     my %args = (
         secure => 0,
@@ -28,7 +28,7 @@ sub new {
         api_url => 'http://disqus.com/api/3',
         );
 
-    croak "missing required argument 'api_secret', " unless $args{'api_secret'};
+    die Net::Disqus::Exception->new({ code => 500, text => "missing required argument 'api_secret'"}) unless $args{'api_secret'};
 
     $args{'api_url'} = 'https://secure.disqus.com/api/3' if($args{'secure'});
     my $self = $class->SUPER::new({%args});
@@ -41,7 +41,7 @@ sub new {
 
     my $interfaces;
 
-    open my $fh, '<', $if_file || die 'could not open "', $if_file, '": $!, ';
+    open my $fh, '<', $if_file || die Net::Disqus::Exception->new({ code => 500, text => 'could not open interfaces.json'});
     {
         local $/;
         $interfaces = JSON::PP::decode_json(<$fh>);
@@ -104,7 +104,7 @@ sub _gensub {
     return sub {
         my %args = (@_);
         for(@{$data->{required}}) {
-            croak "missing required argument '$_'" unless($args{$_});
+            die Net::Disqus::Exception->new({ code => 500, text => "missing required argument '$_'"}) unless($args{$_});
         }
         return $self->_mk_request($data->{method}, %args);
     };
@@ -120,13 +120,8 @@ sub AUTOLOAD {
         return $self;
     }
 }
-
-package Net::Disqus::Exception;
-use base 'Class::Accessor';
-__PACKAGE__->mk_accessors(qw(code text));
         
 1;
-
 __END__
 =head1 NAME
 

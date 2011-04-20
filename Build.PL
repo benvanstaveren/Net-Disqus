@@ -18,5 +18,5 @@ my $builder = Module::Build->new(
     add_to_cleanup      => [ 'Net-Disqus-*' ],
     create_makefile_pl => 'traditional',
 );
-
+$builder->add_build_element('json');
 $builder->create_build_script();
