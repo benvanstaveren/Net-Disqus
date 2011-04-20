@@ -8,8 +8,8 @@ MANIFEST
 META.json
 META.yml
 README
-t/00-load.t
-t/01-instantiate.t
-t/02-exception.t
-t/02-instantiate-no-key.t
+t/000-load.t
+t/001-exception.t
+t/002-instantiate.t
+t/003-instantiate-error.t
 t/manifest.t
