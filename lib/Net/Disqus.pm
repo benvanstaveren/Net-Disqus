@@ -11,7 +11,7 @@ use base 'Class::Accessor';
 __PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua));
 __PACKAGE__->mk_accessors(qw(interfaces));
 
-our $VERSION = qv(0.01);
+our $VERSION = qv('0.1.0');
 our $AUTOLOAD;
 
 sub new {
