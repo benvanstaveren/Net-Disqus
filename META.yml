@@ -17,7 +17,7 @@ name: Net-Disqus
 provides:
   Net::Disqus:
     file: lib/Net/Disqus.pm
-    version: v0.1.0
+    version: v0.1.1
   Net::Disqus::Exception:
     file: lib/Net/Disqus/Exception.pm
     version: 0
@@ -25,7 +25,6 @@ requires:
   JSON::PP: 0
   LWP::UserAgent: 6.02
   Try::Tiny: 0
-  version: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: v0.1.0
+version: v0.1.1

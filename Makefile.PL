@@ -9,8 +9,7 @@ WriteMakefile
                    'LWP::UserAgent' => '6.02',
                    'Test::Exception' => 0,
                    'Test::More' => 0,
-                   'Try::Tiny' => 0,
-                   'version' => 0
+                   'Try::Tiny' => 0
                  },
   'INSTALLDIRS' => 'site',
   'EXE_FILES' => [],

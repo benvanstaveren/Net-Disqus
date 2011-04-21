@@ -1,17 +1,18 @@
 package Net::Disqus;
 use warnings;
 use strict;
-use version;
 use JSON::PP;
+use HTTP::Request;
 use LWP::UserAgent;
 use Try::Tiny;
+use URI::Escape;
 use Net::Disqus::Exception;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua));
 __PACKAGE__->mk_accessors(qw(interfaces rate_limit rate_limit_remaining rate_limit_reset fragment path));
 
-our $VERSION = qv('0.1.1');
+our $VERSION = '0.1.2';
 our $AUTOLOAD;
 
 sub new {
@@ -24,7 +25,7 @@ sub new {
         ua => LWP::UserAgent->new,
         (@_ == 1 && ref $_[0] eq 'HASH') ? %{$_[0]} : @_,
         interfaces => {},
-        api_url => 'http://disqus.com/api/3',
+        api_url => 'http://disqus.com/api/3.0',
         );
 
     die Net::Disqus::Exception->new({ code => 500, text => "missing required argument 'api_secret'"}) unless $args{'api_secret'};
@@ -88,14 +89,21 @@ sub _mk_request {
     $self->fragment(undef);
 
     my $url = sprintf('%s%s.json', $self->api_url, $self->path);
-    my $method = lc($fragment->{method}) || 'get';
+    my $method = $fragment->{method};
     my $required = $fragment->{required} || [];
 
     for(@$required) {
         die Net::Disqus::Exception->new({ code => 500, text => "missing required argument '$_'"}) unless($args{$_});
     }
+    $args{'api_secret'} = $self->api_secret;
 
-    my $res = $self->ua->$method($url, { api_secret => $self->api_secret, %args});
+    my $query_args = join('&', map { sprintf('%s=%s', $_, uri_escape($args{$_})) } (keys(%args)));
+
+    my $uri = URI->new($url);
+    $uri->query($query_args) if($method eq 'GET');
+    my $request = HTTP::Request->new($method, $uri);
+    $request->content($query_args) if($method eq 'POST');
+    my $res = $self->ua->request($request);
     my $obj;
     try {
         $obj = JSON::PP::decode_json($res->content);

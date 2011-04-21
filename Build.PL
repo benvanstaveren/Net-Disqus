@@ -13,10 +13,11 @@ my $builder = Module::Build->new(
         'Test::More'        => 0,
     },
     requires => {
-        'version'           => 0,
         'JSON::PP'          => 0,
         'LWP::UserAgent'    => '6.02',
         'Try::Tiny'         => 0,
+        'URI'               => 0,
+        'URI::Escape'       => 0,
     },
     add_to_cleanup      => [ 'Net-Disqus-*' ],
     create_makefile_pl => 'traditional',

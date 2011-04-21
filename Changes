@@ -1,5 +1,9 @@
 Revision history for Net-Disqus
 
+0.1.2   21/04/2011
+        *   UserAgent didn't quite like the way things were passed along, so modified this.
+        +   New dependencies: URI and URI::Escape
+
 0.1.1   21/04/2011
         *   Changed things around a bit internally with regards to how the interfaces.json file is handled.
         +   Exceptions are now thrown if you try to access an API url that doesn't exist before hitting the

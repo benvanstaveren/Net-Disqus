@@ -29,15 +29,14 @@
          "requires" : {
             "JSON::PP" : 0,
             "LWP::UserAgent" : "6.02",
-            "Try::Tiny" : 0,
-            "version" : 0
+            "Try::Tiny" : 0
          }
       }
    },
    "provides" : {
       "Net::Disqus" : {
          "file" : "lib/Net/Disqus.pm",
-         "version" : "v0.1.0"
+         "version" : "v0.1.1"
       },
       "Net::Disqus::Exception" : {
          "file" : "lib/Net/Disqus/Exception.pm",
@@ -50,5 +49,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "v0.1.0"
+   "version" : "v0.1.1"
 }
