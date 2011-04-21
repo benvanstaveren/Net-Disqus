@@ -1,18 +1,15 @@
 package Net::Disqus;
 use warnings;
 use strict;
-use JSON::PP;
-use HTTP::Request;
-use LWP::UserAgent;
 use Try::Tiny;
-use URI::Escape;
+use Net::Disqus::UserAgent;
 use Net::Disqus::Exception;
 use base 'Class::Accessor';
 
-__PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua));
+__PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua pass_api_errors));
 __PACKAGE__->mk_accessors(qw(interfaces rate_limit rate_limit_remaining rate_limit_reset fragment path));
 
-our $VERSION = '0.1.2';
+our $VERSION = '0.1.3';
 our $AUTOLOAD;
 
 sub new {
@@ -22,7 +19,8 @@ sub new {
 
     my %args = (
         secure => 0,
-        ua => LWP::UserAgent->new,
+        pass_api_errors => 0,
+        ua_args => {},
         (@_ == 1 && ref $_[0] eq 'HASH') ? %{$_[0]} : @_,
         interfaces => {},
         api_url => 'http://disqus.com/api/3.0',
@@ -30,10 +28,10 @@ sub new {
 
     die Net::Disqus::Exception->new({ code => 500, text => "missing required argument 'api_secret'"}) unless $args{'api_secret'};
 
-    $args{'api_url'} = 'https://secure.disqus.com/api/3' if($args{'secure'});
+    $args{'ua'} = Net::Disqus::UserAgent->new(%{$args{'ua_args'}});
+    $args{'api_url'} = 'https://secure.disqus.com/api/3.0' if($args{'secure'});
     my $self = $class->SUPER::new({%args});
-
-    $self->ua->agent(sprintf('%s/%s', __PACKAGE__, $VERSION));
+    bless($self, $class);
 
     my $if_file = $INC{'Net/Disqus.pm'};
     $if_file =~ s/(.*)\.pm$/$1/;
@@ -44,9 +42,10 @@ sub new {
     open my $fh, '<', $if_file || die Net::Disqus::Exception->new({ code => 500, text => 'could not open interfaces.json'});
     {
         local $/;
-        $self->interfaces(JSON::PP::decode_json(<$fh>));
+        $self->interfaces($self->ua->json_decode(<$fh>));
     }
     close($fh);
+
     return $self;
 }
 
@@ -63,6 +62,15 @@ sub fetch {
     return $t->$last(@_);
 }
 
+sub rate_limit_resets_in {
+    my $self = shift;
+    my $now = time();
+
+    return ($now > $self->rate_limit_reset) 
+        ? undef 
+        : $self->rate_limit_reset - $now;
+}
+
 sub rate_limit_wait {   
     my $self = shift;
     my $now = time();
@@ -73,6 +81,8 @@ sub rate_limit_wait {
 
     my $diff = $reset - $now;
     my $remaining = $self->rate_limit_remaining;
+
+    return undef if($diff == 0 || $remaining == 0);
     
     # we can do X requests every Y seconds to fill it up right
     # to the reset time
@@ -89,7 +99,7 @@ sub _mk_request {
     $self->fragment(undef);
 
     my $url = sprintf('%s%s.json', $self->api_url, $self->path);
-    my $method = $fragment->{method};
+    my $method = lc($fragment->{method});
     my $required = $fragment->{required} || [];
 
     for(@$required) {
@@ -97,27 +107,14 @@ sub _mk_request {
     }
     $args{'api_secret'} = $self->api_secret;
 
-    my $query_args = join('&', map { sprintf('%s=%s', $_, uri_escape($args{$_})) } (keys(%args)));
+    # and there we are. 
+    my ($json, $rate) = $self->ua->request($method, $url, %args);
+    die Net::Disqus::Exception->new({ code => $json->{code}, text => $json->{response}}) if(!$self->pass_api_errors && $json->{code} != 0);
 
-    my $uri = URI->new($url);
-    $uri->query($query_args) if($method eq 'GET');
-    my $request = HTTP::Request->new($method, $uri);
-    $request->content($query_args) if($method eq 'POST');
-    my $res = $self->ua->request($request);
-    my $obj;
-    try {
-        $obj = JSON::PP::decode_json($res->content);
-    } catch {
-        die Net::Disqus::Exception->new({code => 500, text => ($res->content =~ /Maintenance \(400\) - DISQUS/i) ? 'Disqus is doing maintenance' : $res->content});
-    };
-    die Net::Disqus::Exception->new({code => $obj->{code}, text => $obj->{response}}) if($res->code != 200);
-
-    # set the rate limit headers
-    $self->rate_limit($res->header('X-Ratelimit-Limit'));
-    $self->rate_limit_remaining($res->header('X-Ratelimit-Remaining'));
-    $self->rate_limit_reset($res->header('X-Ratelimit-Reset'));
-
-    return JSON::PP::decode_json($res->content);
+    $self->rate_limit($rate->{'X-Ratelimit-Limit'});
+    $self->rate_limit_remaining($rate->{'X-Ratelimit-Remaining'});
+    $self->rate_limit_reset($rate->{'X-Ratelimit-Reset'});
+    return $json;
 }
 
 sub AUTOLOAD {
@@ -151,7 +148,7 @@ Net::Disqus - Disqus.com API access
 
 =head1 VERSION
 
-Version 0.01
+Version 0.1.3
 
 =head1 SYNOPSIS
 
@@ -169,9 +166,11 @@ Version 0.01
     
 Creates a new Net::Disqus object. Arguments that can be passed to the constructor:
 
-    api_secret  (REQUIRED)  Your Disqus API secret
-    secure      (optional)  When set, will use HTTPS instead of HTTP
-    ua          (optional)  An LWP::UserAgent instance. Use this if you want to set your own options on it.
+    api_secret      (REQUIRED)  Your Disqus API secret
+    secure          (optional)  When set, will use HTTPS instead of HTTP
+    ua_args         (optional)  Arguments to pass to the user agent (See L<Net::Disqus::UserAgent>)
+    pass_api_errors (optional)  If set, API errors are passed back as result so you can inspect it,
+                                otherwise an exception is thrown if an API error occurs.
 
 =head2 rate_limit
 
@@ -185,10 +184,17 @@ Returns the number of requests you have remaining out of your rate limit.
 
 Returns an epoch time when your rate limit will be reset.
 
+=head2 rate_limit_resets_in
+
+Returns the number of seconds until your rate limit will be reset.
+
 =head2 rate_limit_wait
 
-Returns the number of seconds you have to wait after the last performed request to exactly use up your rate limit before it's reset. Will return undef if the rate limit values aren't set.
-An example:
+Returns the number of seconds you have to wait after the last performed request to exactly use up your rate limit before it's reset. Will return undef if the rate limit values aren't set,
+or for some reason you happen to hit it right when your limit resets. WARNING: Do not use sleep($disqus->rate_limit_wait), the net effect of sleep(undef) is that your application will
+sleep forever.
+
+    An example:
 
         while(1) {
             my $reactions = $disqus->reactions->list(forum => 'mysite');
@@ -197,9 +203,15 @@ An example:
             sleep($wait || 60); 
         }
 
-=head1 API METHOD DOCUMENTATION
+=head2 fetch(url, %args)
+   
+Returns the result from an API call. Pass the following arguments:
 
-For a list of API methods and their arguments, please see L<http://disqus.com/api/docs/>. 
+    url     (REQUIRED)  The url to call on the Disqus API
+    %args   (optional)  Arguments to pass to the API
+
+This method will use the interfaces.json file to check whether the endpoint you requested is valid and whether you have passed all required arguments. An exception is thrown for invalid endpoints or missing required arguments.
+
 
 =head1 CALLING API METHODS
 
@@ -213,9 +225,13 @@ Or you can get the same result like this:
 
 Use whatever you're more comfortable with.
 
+For a list of API methods and their arguments, please see L<http://disqus.com/api/docs/>. 
+
+All API calls will return a hash reference containing at the very least a 'code' and a 'response' key. Use the API documentation or API console to find out what exactly is returned.
+
 =head1 EXCEPTION HANDLING
 
-When errors occur, Net::Disqus will die and throw a Net::Disqus::Exception object. The object contains two properties, 'code' and 'text. Use the below table to find out what the error was:
+When errors occur, and the 'pass_api_errors' option is not set, Net::Disqus will die and throw a Net::Disqus::Exception object. The object contains two properties, 'code' and 'text. Use the below table to find out what the problem was:
 
     Code    Text
     -------------------------------------------------------------------------------
@@ -242,6 +258,8 @@ When errors occur, Net::Disqus will die and throw a Net::Disqus::Exception objec
 
 The above list was taken from L<http://disqus.com/api/docs/errors/>. The HTTP status codes are not returned in the exception object. Exception code '500' is Net::Disqus' own, and will
 either contain the 'No such API endpoint' message if you are trying to access an endpoint not defined, or whatever error LWP::UserAgent encountered.
+
+If you have set the 'pass_api_errors' option, the JSON error object will be returned to your application, so you will have to check the code yourself according to the above table.
 
 =head1 EXCEPTION HANDLING EXAMPLES
 
@@ -270,6 +288,20 @@ Another example:
         #
         # $_->code should contain '500' and $_->text should contain 'No such API endpoint'
     };
+
+And an example where we want to do this ourselves:
+
+    my $nd = Net::Disqus->new(api_secret => 'reallyinvalid', pass_api_errors => 1);
+    my $res;
+
+    try {
+        $res = $nd->reactions->list(forum => 'foo');
+    } catch {
+        # this will not result in an error unless there was no connection possible
+    };
+    # and now
+    # $res->{code} == 5;
+    # $res->{response} eq 'Invalid API Key';
 
 =head1 AUTHOR
 

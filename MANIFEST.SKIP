@@ -7,3 +7,4 @@
 ^\.hg.*
 ^MYMETA\.yml$
 ^MYMETA\.json$
+^lib/t\.pl

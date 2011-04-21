@@ -1,5 +1,12 @@
 Revision history for Net-Disqus
 
+0.1.3   22/04/2011
+        +   Added Net::Disqus::UserAgent, it will select between LWP::UserAgent (the default) 
+            and Mojo::UserAgent if it's installed. This behaviour has been added in order to
+            make plugging Net::Disqus into Mojolicious easier.
+        +   Added some new options for user agent behaviour as well as the handling of 
+            Disqus API errors.
+
 0.1.2   21/04/2011
         *   UserAgent didn't quite like the way things were passed along, so modified this.
         +   New dependencies: URI and URI::Escape

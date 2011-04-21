@@ -13,6 +13,7 @@ my $builder = Module::Build->new(
         'Test::More'        => 0,
     },
     requires => {
+        'Class::Accessor'   => 0,
         'JSON::PP'          => 0,
         'LWP::UserAgent'    => '6.02',
         'Try::Tiny'         => 0,
