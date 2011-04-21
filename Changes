@@ -1,5 +1,13 @@
 Revision history for Net-Disqus
 
-0.01    Date/time
-        First version, released on an unsuspecting world.
+0.1.1   21/04/2011
+        *   Changed things around a bit internally with regards to how the interfaces.json file is handled.
+        +   Exceptions are now thrown if you try to access an API url that doesn't exist before hitting the
+            Disqus API itself
+        +   Check added to see if Disqus is doing maintenance.
+        +   Docs updated
+        +   More tests added for testing against the API.
+
+0.1.0   20/04/2011
+        *   First version, released on an unsuspecting world.
 

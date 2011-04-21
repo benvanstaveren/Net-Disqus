@@ -9,9 +9,9 @@ use Net::Disqus::Exception;
 use base 'Class::Accessor';
 
 __PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua));
-__PACKAGE__->mk_accessors(qw(interfaces));
+__PACKAGE__->mk_accessors(qw(interfaces rate_limit rate_limit_remaining rate_limit_reset fragment path));
 
-our $VERSION = qv('0.1.0');
+our $VERSION = qv('0.1.1');
 our $AUTOLOAD;
 
 sub new {
@@ -24,7 +24,6 @@ sub new {
         ua => LWP::UserAgent->new,
         (@_ == 1 && ref $_[0] eq 'HASH') ? %{$_[0]} : @_,
         interfaces => {},
-        _url => undef,
         api_url => 'http://disqus.com/api/3',
         );
 
@@ -44,80 +43,95 @@ sub new {
     open my $fh, '<', $if_file || die Net::Disqus::Exception->new({ code => 500, text => 'could not open interfaces.json'});
     {
         local $/;
-        $interfaces = JSON::PP::decode_json(<$fh>);
+        $self->interfaces(JSON::PP::decode_json(<$fh>));
     }
     close($fh);
-    $self->_map_to_urls('', $interfaces);
-
     return $self;
-}
-
-sub _map_to_urls {
-    my $self = shift;
-    my $root = shift;
-    my $tree = shift;
-
-    foreach my $key (keys(%$tree)) {
-        if($tree->{$key}->{method}) {
-            $self->interfaces->{$root . '/' . $key} = $self->_gensub($tree->{$key}, $root . '/' . $key);
-        } else {
-            $self->_map_to_urls($root . '/' . $key, $tree->{$key});
-        }
-    }
 }
 
 sub fetch {
     my $self = shift;
     my $url  = shift;
+    my $t = $self;
 
-    $url = '/' . $url if($url !~ /^\//);
+    $url =~ s/^\///;
+    my @url = split(/\//, $url);
+    my $last = pop(@url);
 
-    if($self->interfaces->{$url}) {
-        return $self->interfaces->{$url}->(@_);
-    } else {
-        die Net::Disqus::Exception->new({ code => 500, text => 'No such API endpoint' });
-    }
+    $t = $t->$_ for(@url);
+    return $t->$last(@_);
+}
+
+sub rate_limit_wait {   
+    my $self = shift;
+    my $now = time();
+    my $reset = $self->rate_limit_reset || 0;
+
+    return undef unless($reset > 0); 
+    return undef if($now > $reset);
+
+    my $diff = $reset - $now;
+    my $remaining = $self->rate_limit_remaining;
+    
+    # we can do X requests every Y seconds to fill it up right
+    # to the reset time
+    my $wait = int($diff/$remaining);
+    $wait-- if($wait * $remaining > $diff); 
+    return $wait;
 }
 
 sub _mk_request {
     my $self = shift;
-    my $method = lc(shift);
+    my $fragment = $self->fragment;
     my %args = (@_);
 
-    my $url = sprintf('%s%s', $self->api_url, delete($self->{_url}));
+    $self->fragment(undef);
+
+    my $url = sprintf('%s%s.json', $self->api_url, $self->path);
+    my $method = lc($fragment->{method}) || 'get';
+    my $required = $fragment->{required} || [];
+
+    for(@$required) {
+        die Net::Disqus::Exception->new({ code => 500, text => "missing required argument '$_'"}) unless($args{$_});
+    }
+
     my $res = $self->ua->$method($url, { api_secret => $self->api_secret, %args});
     my $obj;
     try {
         $obj = JSON::PP::decode_json($res->content);
     } catch {
-        die Net::Disqus::Exception->new({code => 500, text => $res->content});
+        die Net::Disqus::Exception->new({code => 500, text => ($res->content =~ /Maintenance \(400\) - DISQUS/i) ? 'Disqus is doing maintenance' : $res->content});
     };
     die Net::Disqus::Exception->new({code => $obj->{code}, text => $obj->{response}}) if($res->code != 200);
+
+    # set the rate limit headers
+    $self->rate_limit($res->header('X-Ratelimit-Limit'));
+    $self->rate_limit_remaining($res->header('X-Ratelimit-Remaining'));
+    $self->rate_limit_reset($res->header('X-Ratelimit-Reset'));
+
     return JSON::PP::decode_json($res->content);
-}
-
-sub _gensub {
-    my $self = shift;
-    my $data = shift;
-    my $url  = shift;
-
-    return sub {
-        my %args = (@_);
-        for(@{$data->{required}}) {
-            die Net::Disqus::Exception->new({ code => 500, text => "missing required argument '$_'"}) unless($args{$_});
-        }
-        return $self->_mk_request($data->{method}, %args);
-    };
 }
 
 sub AUTOLOAD {
     my $self = shift;
-    { ($self->{_url} ||= "") .= '/' . ((($_ = $AUTOLOAD) =~ s/.*://) ? $_ : ""); }
+    my $fragment = ((($_ = $AUTOLOAD) =~ s/.*://) ? $_ : "");
+    return if($fragment eq uc($fragment));
 
-    if($self->interfaces->{$self->{_url}}) {
-        return $self->interfaces->{$self->{_url}}->(@_);
+    unless($self->fragment) {
+        $self->fragment($self->interfaces);
+        $self->path('');
+    }
+    $self->path($self->path . '/' . $fragment);
+    if($self->fragment->{$fragment}) {
+        $self->fragment($self->fragment->{$fragment});
+
+        return ($self->fragment->{method}) 
+            ? $self->_mk_request(@_)
+            : $self;
     } else {
-        return $self;
+        $self->fragment(undef);
+        my $path = $self->path and $self->path(undef);
+        die Net::Disqus::Exception->new({ code => 500, text => "No such API endpoint"});
     }
 }
         
@@ -133,12 +147,13 @@ Version 0.01
 
 =head1 SYNOPSIS
 
-use Net::Disqus;
-my $disqus = Net::Disqus->new(
-    api_secret  => 'your_api_secret',
-    );
+    use Net::Disqus;
+    my $disqus = Net::Disqus->new(
+        api_secret  => 'your_api_secret',
+        %options,
+        );
 
-my $reactions = $disqus->reactions->list(...);
+    my $reactions = $disqus->reactions->list(...);
 
 =head1 OBJECT METHODS
 
@@ -149,6 +164,30 @@ Creates a new Net::Disqus object. Arguments that can be passed to the constructo
     api_secret  (REQUIRED)  Your Disqus API secret
     secure      (optional)  When set, will use HTTPS instead of HTTP
     ua          (optional)  An LWP::UserAgent instance. Use this if you want to set your own options on it.
+
+=head2 rate_limit
+
+Returns the rate limit you have on the Disqus API.
+
+=head2 rate_limit_remaining
+
+Returns the number of requests you have remaining out of your rate limit.
+
+=head2 rate_limit_reset
+
+Returns an epoch time when your rate limit will be reset.
+
+=head2 rate_limit_wait
+
+Returns the number of seconds you have to wait after the last performed request to exactly use up your rate limit before it's reset. Will return undef if the rate limit values aren't set.
+An example:
+
+        while(1) {
+            my $reactions = $disqus->reactions->list(forum => 'mysite');
+            my $wait = $diqus->rate_limit_wait;
+            ...
+            sleep($wait || 60); 
+        }
 
 =head1 API METHOD DOCUMENTATION
 
