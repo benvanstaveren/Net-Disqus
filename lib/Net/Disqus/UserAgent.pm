@@ -4,6 +4,8 @@ use warnings;
 use Net::Disqus::Exception;
 use Try::Tiny;
 
+our $VERSION = '1.13';
+
 sub new {
     my $pkg = shift;
     my %args = (

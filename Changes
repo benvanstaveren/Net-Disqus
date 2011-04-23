@@ -1,24 +1,76 @@
-Revision history for Net-Disqus
+changeset:   13:18d3c0460c22
+tag:         tip
+user:        madcat@cpan.org
+date:        Sun Apr 24 02:35:19 2011 +0700
+summary:     Added tag 1.12 for changeset 7bb44dffde9b
 
-0.1.3   22/04/2011
-        +   Added Net::Disqus::UserAgent, it will select between LWP::UserAgent (the default) 
-            and Mojo::UserAgent if it's installed. This behaviour has been added in order to
-            make plugging Net::Disqus into Mojolicious easier.
-        +   Added some new options for user agent behaviour as well as the handling of 
-            Disqus API errors.
+changeset:   12:7bb44dffde9b
+tag:         1.12
+user:        madcat@cpan.org
+date:        Sun Apr 24 02:35:13 2011 +0700
+summary:     Finalised converting to Module::Build
 
-0.1.2   21/04/2011
-        *   UserAgent didn't quite like the way things were passed along, so modified this.
-        +   New dependencies: URI and URI::Escape
+changeset:   11:01a608b32d7f
+user:        madcat@cpan.org
+date:        Fri Apr 22 03:53:46 2011 +0700
+summary:     Added tag 0.1.3 for changeset ab55e9495384
 
-0.1.1   21/04/2011
-        *   Changed things around a bit internally with regards to how the interfaces.json file is handled.
-        +   Exceptions are now thrown if you try to access an API url that doesn't exist before hitting the
-            Disqus API itself
-        +   Check added to see if Disqus is doing maintenance.
-        +   Docs updated
-        +   More tests added for testing against the API.
+changeset:   10:ab55e9495384
+tag:         0.1.3
+user:        madcat@cpan.org
+date:        Fri Apr 22 03:53:41 2011 +0700
+summary:     +   Added Net::Disqus::UserAgent, it will select between LWP::UserAgent (the default)
 
-0.1.0   20/04/2011
-        *   First version, released on an unsuspecting world.
+changeset:   9:69560f67247d
+user:        madcat@cpan.org
+date:        Thu Apr 21 18:34:13 2011 +0700
+summary:     Added tag 0.1.2 for changeset 66e68b63ece4
+
+changeset:   8:66e68b63ece4
+tag:         0.1.2
+user:        madcat@cpan.org
+date:        Thu Apr 21 18:34:09 2011 +0700
+summary:     *   UserAgent didn't quite like the way things were passed along, so modified this.
+
+changeset:   7:3a3a087be414
+user:        madcat@cpan.org
+date:        Thu Apr 21 17:13:11 2011 +0700
+summary:     Added tag 0.1.1 for changeset ad02959e15e1
+
+changeset:   6:ad02959e15e1
+tag:         0.1.1
+user:        madcat@cpan.org
+date:        Thu Apr 21 17:13:06 2011 +0700
+summary:     *   Changed things around a bit internally with regards to how the interfaces.json file is handled.
+
+changeset:   5:0d7d3bcc94e3
+user:        madcat@cpan.org
+date:        Thu Apr 21 04:59:02 2011 +0700
+summary:     Final fixes before release 0.1.0
+
+changeset:   4:985f9d995b5c
+user:        madcat@cpan.org
+date:        Thu Apr 21 04:58:50 2011 +0700
+summary:     Added tag v0.1.0 for changeset 38b143c76c94
+
+changeset:   3:38b143c76c94
+tag:         v0.1.0
+user:        madcat@cpan.org
+date:        Thu Apr 21 04:23:18 2011 +0700
+summary:     Changed Build.PL - MB works a bit differen than MM >_<
+
+changeset:   2:a091c148847f
+user:        madcat@cpan.org
+date:        Thu Apr 21 04:20:34 2011 +0700
+summary:     Forgot to update manifest
+
+changeset:   1:a352543e69dc
+user:        madcat@cpan.org
+date:        Thu Apr 21 04:19:33 2011 +0700
+summary:     Added some more tests and split off the exception module
+
+changeset:   0:87e10be3a56d
+user:        madcat@cpan.org
+date:        Thu Apr 21 03:51:29 2011 +0700
+summary:     Initial import
 
