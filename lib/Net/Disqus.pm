@@ -9,7 +9,7 @@ use base 'Class::Accessor';
 __PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua pass_api_errors));
 __PACKAGE__->mk_accessors(qw(interfaces rate_limit rate_limit_remaining rate_limit_reset fragment path));
 
-our $VERSION = '0.1.3';
+our $VERSION = '1.11';
 our $AUTOLOAD;
 
 sub new {
@@ -148,7 +148,7 @@ Net::Disqus - Disqus.com API access
 
 =head1 VERSION
 
-Version 0.1.3
+Version 1.11
 
 =head1 SYNOPSIS
 

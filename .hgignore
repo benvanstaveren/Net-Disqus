@@ -13,3 +13,4 @@ pod2htm*.tmp
 Net-Disqus-*
 lib/t.pl
 MYMETA*
+META*

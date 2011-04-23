@@ -4,10 +4,7 @@ lib/Net/Disqus.pm
 lib/Net/Disqus/Exception.pm
 lib/Net/Disqus/interfaces.json
 lib/Net/Disqus/UserAgent.pm
-Makefile.PL
 MANIFEST
-META.json
-META.yml
 README
 t/000-load.t
 t/001-exception.t
@@ -16,3 +13,5 @@ t/003-instantiate-error.t
 t/004-interfaces.t
 t/005-online.t
 t/manifest.t
+META.yml
+META.json
