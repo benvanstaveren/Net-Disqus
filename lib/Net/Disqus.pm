@@ -34,17 +34,10 @@ sub new {
 
     my $if_file = $INC{'Net/Disqus.pm'};
     $if_file =~ s/(.*)\.pm$/$1/;
-    $if_file .= '/interfaces.json';
+    $if_file .= '/Interfaces.pm';
 
-    my $interfaces;
-
-    open my $fh, '<', $if_file || die Net::Disqus::Exception->new({ code => 500, text => 'could not open interfaces.json'});
-    {
-        local $/;
-        $self->interfaces($self->ua->json_decode(<$fh>));
-    }
-    close($fh);
-
+    require "$if_file";
+    $self->interfaces($self->ua->json_decode(Net::Disqus::Interfaces->INTERFACES));
     return $self;
 }
 

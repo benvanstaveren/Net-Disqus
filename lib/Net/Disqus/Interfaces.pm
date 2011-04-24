@@ -1,3 +1,13 @@
+use strict;
+use warnings;
+package Net::Disqus::Interfaces;
+
+# this got turned into a module since bundling a json file is often
+# a pain in the you-know-whatsit - plus I forgot to add it to the Dist::Zilla
+# distribution last time, so as a module at least it get picked up all the time 
+# regardless. 
+
+use constant INTERFACES => q|
 {
   "reactions": {
     "list": {
@@ -609,3 +619,6 @@
     }
   }
 }
+|;
+
+1;
