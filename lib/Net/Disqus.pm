@@ -1,6 +1,6 @@
-package Net::Disqus;
 use warnings;
 use strict;
+package Net::Disqus;
 use Try::Tiny;
 use Net::Disqus::UserAgent;
 use Net::Disqus::Exception;
@@ -9,7 +9,6 @@ use base 'Class::Accessor';
 __PACKAGE__->mk_ro_accessors(qw(api_key api_secret api_url ua pass_api_errors));
 __PACKAGE__->mk_accessors(qw(interfaces rate_limit rate_limit_remaining rate_limit_reset fragment path));
 
-our $VERSION = '1.12';
 our $AUTOLOAD;
 
 sub new {
@@ -145,10 +144,6 @@ __END__
 =head1 NAME
 
 Net::Disqus - Disqus.com API access
-
-=head1 VERSION
-
-Version 1.12
 
 =head1 SYNOPSIS
 
@@ -309,7 +304,7 @@ Ben van Staveren, C<< <madcat at cpan.org> >>
 
 =head1 BUGS AND/OR CONTRIBUTING
 
-Please report any bugs or feature requests through the web interface at L<https://bitbucket.org/xirinet/net-disqus/issues>. If you want to contribute code or patches, feel free to fork the Mercurial repository located at L<https://bitbucket.org/xirinet/net-disqus> and make pull requests for any patches you have.
+Please report any bugs or feature requests through the web interface at L<https://github.com/ben-van-staveren/net-disqus/issues>. If you want to contribute code or patches, feel free to fork the Git repository located at L<https://github.com/benvanstaveren/net-disqus> and make pull requests for any patches you have.
 
 =head1 SUPPORT
 
