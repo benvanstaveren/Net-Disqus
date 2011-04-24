@@ -18,10 +18,10 @@ if(!$ENV{DISQUS_API_SECRET}) {
     like($content, qr/Mojolicious/, 'LWP::UserAgent get OK');
 
     $ua = Net::Disqus::UserAgent->new(forcelwp => 1);
-    ($content, $rate) = $ua->request('get', 'http://disqus.com/api/3.0/applications/listUsage');
+    ($content, $rate) = $ua->request('get', 'http://disqus.com/api/3.0/applications/listUsage', api_secret => $ENV{DISQUS_API_SECRET});
     ok(defined($content->{code}), 'LWP::UserAgent: Have a response code');
     ok(defined($content->{response}), 'LWP::UserAgent: Have a response value');
-    ok(exists($rate->{rate_limit}), 'LWP::UserAgent: Have a rate limit');
+    ok(exists($rate->{'X-Ratelimit-Limit'}), 'LWP::UserAgent: Have a rate limit');
 
     done_testing();
 }
