@@ -297,7 +297,7 @@ Ben van Staveren, C<< <madcat at cpan.org> >>
 
 =head1 BUGS AND/OR CONTRIBUTING
 
-Please report any bugs or feature requests through the web interface at L<https://github.com/ben-van-staveren/net-disqus/issues>. If you want to contribute code or patches, feel free to fork the Git repository located at L<https://github.com/benvanstaveren/net-disqus> and make pull requests for any patches you have.
+Please report any bugs or feature requests through the web interface at L<https://github.com/benvanstaveren/net-disqus/issues>. If you want to contribute code or patches, feel free to fork the Git repository located at L<https://github.com/benvanstaveren/net-disqus> and make pull requests for any patches you have.
 
 =head1 SUPPORT
 
