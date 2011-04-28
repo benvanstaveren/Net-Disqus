@@ -1,6 +1,9 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    Fixed missing prerequisites 
+
+1.17      2011-04-25 05:39:55 Asia/Jakarta
     Fix for the Interfaces.pm module, all is in order now.
     
 

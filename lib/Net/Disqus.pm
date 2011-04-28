@@ -45,7 +45,7 @@ sub fetch {
     my @url = split(/\//, $url);
     my $last = pop(@url);
 
-    $t = $t->$_ for(@url);
+    $t = $t->$_() for(@url);
     return $t->$last(@_);
 }
 
