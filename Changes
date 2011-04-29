@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    Fix for missing Test::Exception in prerequisites
 
 1.18      2011-04-28 11:48:07 Asia/Jakarta
     Fixed missing prerequisites 
