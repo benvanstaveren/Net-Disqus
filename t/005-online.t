@@ -3,8 +3,8 @@ use Test::More;
 use Test::Exception;
 use Data::Dumper;
 
-if(!$ENV{DISQUS_API_SECRET}) {
-    plan skip_all => 'No online testing requested, set the DISQUS_API_SECRET environment variable to your secret api key to test against the live Disqus API';
+if(!$ENV{DISQUS_API_SECRET} || !$ENV{DISQUS_ONLINE}) {
+    plan skip_all => 'No live testing requested, set the DISQUS_ONLINE environment variable, and set the DISQUS_API_SECRET environment variable to your secret api key';
 } else {
     my $api_secret = $ENV{DISQUS_API_SECRET};
     my $test_url   = '/applications/listUsage';

@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+1.18      2011-04-28 11:48:07 Asia/Jakarta
     Fixed missing prerequisites 
 
 1.17      2011-04-25 05:39:55 Asia/Jakarta

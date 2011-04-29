@@ -1,7 +1,13 @@
 #!/usr/bin/env perl -T 
 
-use Test::More tests => 7;
+use Test::More;
 use Test::Exception;
+
+if(!$ENV{DISQUS_ONLINE}) {
+    plan skip_all => 'No online testing requested, set the DISQUS_ONLINE environment variable to test against the Disqus API';
+} else {
+    plan tests => 7;
+}
 
 use_ok 'Net::Disqus';
 use_ok 'Net::Disqus::Exception';
