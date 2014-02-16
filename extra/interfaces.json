@@ -419,7 +419,16 @@
         "jsonp", 
         "rss"
       ]
-    }, 
+    },
+    "listPopular": {
+      "required": [], 
+      "method": "GET", 
+      "formats": [
+        "json", 
+        "jsonp", 
+        "rss"
+      ]
+    },
     "update": {
       "required": [
         "thread"
