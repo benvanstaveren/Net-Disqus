@@ -15,11 +15,11 @@ sub new {
     );
 
     $args{agent} ||= "Net::Disqus/$Net::Disqus::VERSION";
+
     if(!$args{'forcelwp'}) {
         eval 'use Mojo::UserAgent; use Mojo::JSON; use Mojo::URL';
         unless($@) {
             $args{'ua_class'} = 'Mojo::UserAgent';
-            $args{'name'} = delete($args{'agent'});
             $args{'ua_key'} = 'mojo';
         }  else {
             eval 'use LWP::UserAgent; use JSON::PP; use URI; use URI::Escape;';
@@ -30,8 +30,15 @@ sub new {
         die Net::Disqus::Exception->new({code => 500, text => 'Something really funny is going on, cannot find one of LWP::UserAgent, JSON::PP, URI, URI::Escape'}) if($@);
     }
     my $self = bless({%args}, $pkg);
-    delete($args{$_}) for(qw(pass_content_as_is forcelwp ua_class ua_key)); # and this is for LWP who doesn't like being passed unknown options
+    delete($args{$_}) for(qw(pass_content_as_is forcelwp ua_class ua_key name agent)); # and this is for LWP who doesn't like being passed unknown options
+
     $self->{'ua'} = $self->{'ua_class'}->new(%args);
+
+    if($self->{'ua_key'} eq 'mojo') {
+        $self->{'ua'}->transactor->name($self->{'agent'});
+    } else {
+        $self->{'ua'}->agent($self->{'agent'});
+    }
     return $self;
 }
 
